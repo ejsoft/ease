@@ -1,0 +1,30 @@
+#!/usr/bin/env php
+<?php
+/**
+ * build script file.
+ */
+
+define('YII_DEBUG', true);
+
+$autoload = dirname(__DIR__) . '//vendor/autoload.php';
+
+if (file_exists($autoload)) {
+    require($autoload);
+    $vendorPath = dirname($autoload);
+}
+
+if (!isset($vendorPath)) {
+    echo "composer autoloader could not be found.\nYou should run `composer install` in repo root directory.\n";
+    exit(1);
+}
+require($vendorPath . '/yiisoft/yii2/Yii.php');
+
+Yii::setAlias('@ej/build', __DIR__);
+
+$application = new yii\console\Application([
+    'id'                  => 'ej-build',
+    'basePath'            => __DIR__,
+    'controllerNamespace' => 'ej\build\controllers',
+    'enableCoreCommands'  => false,
+]);
+$application->run();

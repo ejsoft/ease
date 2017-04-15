@@ -1,0 +1,25 @@
+.idea
+.sass-cache
+nbproject
+
+.buildpath
+.project
+.settings
+
+Thumbs.db
+
+codecept.phar
+composer.phar
+vendor
+
+.DS_Store
+
+phpunit.phar
+phpunit.xml
+node_modules
+
+# ignore dev installed apps and modules
+/apps
+/modules
+
+tests/_output/*
