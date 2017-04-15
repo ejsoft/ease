@@ -23,14 +23,15 @@ class DevController extends Controller
     /**
      * @var string
      */
-    public $app = 'git@github.com:ejsoft/ej.git';
+    public $app = 'git@github.com:ejsoft/ej-cms.git';
     /**
      * @var array
      */
-    public $modules = [
-        //'admin' => 'git@github.com:yiisoft/yii2-apidoc.git',
-    ];
-
+    public $modules = [];
+    /**
+     * @var array
+     */
+    public $excludeDirs = ['core'];
 
     /**
      * Install all modules and app
@@ -72,7 +73,7 @@ class DevController extends Controller
         // root of the dev repo
         $base = dirname(dirname(__DIR__));
         $dirs = $this->listSubDirs("$base/modules");
-        $dirs = array_merge($dirs, $this->listSubDirs("$base/apps"));
+        $dirs = array_merge($dirs, $this->listSubDirs("$base/site"));
         asort($dirs);
 
         $oldcwd = getcwd();
@@ -87,49 +88,43 @@ class DevController extends Controller
     }
 
     /**
-     * @param $app
      * @param null $repo
      *
      * @return int
      */
-    public function actionApp($app, $repo = null)
+    public function actionSite($repo = null)
     {
         // root of the dev repo
         $base = dirname(dirname(__DIR__));
-        $appDir = "$base/apps/$app";
+        $appDir = "$base/site";
 
         if (!file_exists($appDir)) {
             if (empty($repo)) {
-                if (isset($this->apps[$app])) {
-                    $repo = $this->apps[$app];
-                    if ($this->useHttp) {
-                        $repo = str_replace('git@github.com:', 'https://github.com/', $repo);
-                    }
-                } else {
-                    $this->stderr("Repo argument is required for app '$app'.\n", Console::FG_RED);
-                    return 1;
+                $repo = $this->app;
+                if ($this->useHttp) {
+                    $repo = str_replace('git@github.com:', 'https://github.com/', $repo);
                 }
             }
 
-            $this->stdout("cloning application repo '$app' from '$repo'...\n", Console::BOLD);
+            $this->stdout("cloning site from '$repo'...\n", Console::BOLD);
             passthru('git clone ' . escapeshellarg($repo) . ' ' . $appDir);
             $this->stdout("done.\n", Console::BOLD, Console::FG_GREEN);
         }
 
         // cleanup
-        $this->stdout("cleaning up application '$app' vendor directory...\n", Console::BOLD);
-        $this->cleanupVendorDir($appDir);
+        $this->stdout("cleaning up site vendor directory...\n", Console::BOLD);
+        $this->cleanupVendorDir($appDir . '/protected');
         $this->stdout("done.\n", Console::BOLD, Console::FG_GREEN);
 
         // composer update
-        $this->stdout("updating composer for app '$app'...\n", Console::BOLD);
+        $this->stdout("updating composer for site...\n", Console::BOLD);
         chdir($appDir);
         passthru('composer update --prefer-dist');
         $this->stdout("done.\n", Console::BOLD, Console::FG_GREEN);
 
         // link directories
-        $this->stdout("linking framework and modules to '$app' app vendor dir...\n", Console::BOLD);
-        $this->linkCmsAndModules($appDir, $base);
+        $this->stdout("linking cms and modules to site vendor dir...\n", Console::BOLD);
+        $this->linkCmsAndModules($appDir . '/protected', $base);
         $this->stdout("done.\n", Console::BOLD, Console::FG_GREEN);
 
         return 0;
@@ -155,29 +150,29 @@ class DevController extends Controller
                         $repo = str_replace('git@github.com:', 'https://github.com/', $repo);
                     }
                 } else {
-                    $this->stderr("Repo argument is required for extension '$module'.\n", Console::FG_RED);
+                    $this->stderr("Repo argument is required for module '$module'.\n", Console::FG_RED);
                     return 1;
                 }
             }
 
-            $this->stdout("cloning extension repo '$module' from '$repo'...\n", Console::BOLD);
+            $this->stdout("cloning module repo '$module' from '$repo'...\n", Console::BOLD);
             passthru('git clone ' . escapeshellarg($repo) . ' ' . $moduleDir);
             $this->stdout("done.\n", Console::BOLD, Console::FG_GREEN);
         }
 
         // cleanup
-        $this->stdout("cleaning up extension '$module' vendor directory...\n", Console::BOLD);
+        $this->stdout("cleaning up module '$module' vendor directory...\n", Console::BOLD);
         $this->cleanupVendorDir($moduleDir);
         $this->stdout("done.\n", Console::BOLD, Console::FG_GREEN);
 
         // composer update
-        $this->stdout("updating composer for extension '$module'...\n", Console::BOLD);
+        $this->stdout("updating composer for module '$module'...\n", Console::BOLD);
         chdir($moduleDir);
         passthru('composer update --prefer-dist');
         $this->stdout("done.\n", Console::BOLD, Console::FG_GREEN);
 
         // link directories
-        $this->stdout("linking framework and modules to '$module' vendor dir...\n", Console::BOLD);
+        $this->stdout("linking cms and modules to '$module' vendor dir...\n", Console::BOLD);
         $this->linkCmsAndModules($moduleDir, $base);
         $this->stdout("done.\n", Console::BOLD, Console::FG_GREEN);
 
@@ -204,13 +199,13 @@ class DevController extends Controller
      */
     protected function cleanupVendorDir($dir)
     {
-        if (is_link($link = "$dir/vendor/yiisoft/yii2")) {
+        if (is_link($link = "$dir/vendor/ejsoft/ej-core")) {
             $this->stdout("Removing symlink $link.\n");
             $this->unlink($link);
         }
-        $modules = $this->findDirs("$dir/vendor/yiisoft");
-        foreach ($modules as $ext) {
-            if (is_link($link = "$dir/vendor/yiisoft/yii2-$ext")) {
+        $modules = $this->findDirs("$dir/vendor/ejsoft");
+        foreach ($modules as $module) {
+            if (is_link($link = "$dir/vendor/ejsoft/ej-$module")) {
                 $this->stdout("Removing symlink $link.\n");
                 $this->unlink($link);
             }
@@ -313,14 +308,14 @@ class DevController extends Controller
                 continue;
             }
             $path = $dir . DIRECTORY_SEPARATOR . $file;
-            if (is_dir($path) && preg_match('/^yii2-(.*)$/', $file, $matches)) {
+            if (is_dir($path) && preg_match('/^ej-(.*)$/', $file, $matches)) {
                 $list[] = $matches[1];
             }
         }
         closedir($handle);
 
         foreach ($list as $i => $e) {
-            if ($e === 'composer') { // skip composer to not break composer update
+            if ($e === 'composer' || in_array($e, $this->excludeDirs)) {
                 unset($list[$i]);
             }
         }
