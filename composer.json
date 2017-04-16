@@ -29,8 +29,7 @@
     "symfony/process": "*",
     "samdark/sitemap": "*",
     "danielstjules/stringy": "*",
-    "longman/ip-tools": "*",
-    "bower-asset/requirejs": "~2"
+    "longman/ip-tools": "*"
   },
   "require-dev": {
     "codeception/base": "^2.2.3",

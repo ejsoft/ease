@@ -27,7 +27,9 @@ class DevController extends Controller
     /**
      * @var array
      */
-    public $modules = [];
+    public $modules = [
+        'site' => 'git@github.com:ejsoft/ej-site.git'
+    ];
     /**
      * @var array
      */
@@ -49,7 +51,7 @@ class DevController extends Controller
             }
         }
 
-        $ret = $this->actionApp($this->app);
+        $ret = $this->actionSite($this->app);
         if ($ret !== 0) {
             return $ret;
         }
