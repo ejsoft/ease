@@ -28,12 +28,12 @@ class DevController extends Controller
      * @var array
      */
     public $modules = [
-        'site' => 'git@github.com:ejsoft/ej-site.git'
+        'site' => 'git@github.com:ejsoft/module-site.git'
     ];
     /**
      * @var array
      */
-    public $excludeDirs = ['core'];
+    public $excludeDirs = [];
 
     /**
      * Install all modules and app
@@ -135,15 +135,16 @@ class DevController extends Controller
     /**
      * @param $module
      * @param null $repo
+     * @param bool $useComposer
      *
      * @return int
      */
-    public function actionModule($module, $repo = null)
+    public function actionModule($module, $repo = null, $useComposer = true)
     {
         // root of the dev repo
         $base = dirname(dirname(__DIR__));
         $moduleDir = "$base/modules/$module";
-
+        echo $moduleDir . PHP_EOL;
         if (!file_exists($moduleDir)) {
             if (empty($repo)) {
                 if (isset($this->modules[$module])) {
@@ -159,7 +160,12 @@ class DevController extends Controller
 
             $this->stdout("cloning module repo '$module' from '$repo'...\n", Console::BOLD);
             passthru('git clone ' . escapeshellarg($repo) . ' ' . $moduleDir);
-            $this->stdout("done.\n", Console::BOLD, Console::FG_GREEN);
+            if (is_dir($moduleDir)) {
+                $this->stdout("done.\n", Console::BOLD, Console::FG_GREEN);
+            } else {
+                $this->stdout("error cloning repo: $repo\n", Console::BOLD, Console::FG_RED);
+                return -1;
+            }
         }
 
         // cleanup
@@ -167,12 +173,13 @@ class DevController extends Controller
         $this->cleanupVendorDir($moduleDir);
         $this->stdout("done.\n", Console::BOLD, Console::FG_GREEN);
 
-        // composer update
-        $this->stdout("updating composer for module '$module'...\n", Console::BOLD);
-        chdir($moduleDir);
-        passthru('composer update --prefer-dist');
-        $this->stdout("done.\n", Console::BOLD, Console::FG_GREEN);
-
+        if ($useComposer) {
+            // composer update
+            $this->stdout("updating composer for module '$module'...\n", Console::BOLD);
+            chdir($moduleDir);
+            passthru('composer update --prefer-dist');
+            $this->stdout("done.\n", Console::BOLD, Console::FG_GREEN);
+        }
         // link directories
         $this->stdout("linking cms and modules to '$module' vendor dir...\n", Console::BOLD);
         $this->linkCmsAndModules($moduleDir, $base);
@@ -187,7 +194,7 @@ class DevController extends Controller
     public function options($actionID)
     {
         $options = parent::options($actionID);
-        if (in_array($actionID, ['ext', 'app', 'all'], true)) {
+        if (in_array($actionID, ['module', 'site', 'all'], true)) {
             $options[] = 'useHttp';
         }
         return $options;
@@ -207,7 +214,8 @@ class DevController extends Controller
         }
         $modules = $this->findDirs("$dir/vendor/ejsoft");
         foreach ($modules as $module) {
-            if (is_link($link = "$dir/vendor/ejsoft/ej-$module")) {
+            echo "$dir/vendor/ejsoft/module-$module" . PHP_EOL;
+            if (is_link($link = "$dir/vendor/ejsoft/module-$module")) {
                 $this->stdout("Removing symlink $link.\n");
                 $this->unlink($link);
             }
@@ -215,7 +223,7 @@ class DevController extends Controller
     }
 
     /**
-     * Creates symlinks to framework and extension sources for the application
+     * Creates symlinks to framework and module sources for the application
      *
      * @param string $dir  application directory
      * @param string $base Yii sources base directory
@@ -232,12 +240,12 @@ class DevController extends Controller
         }
         $modules = $this->findDirs("$dir/vendor/ejsoft");
         foreach ($modules as $mod) {
-            if (is_dir($link = "$dir/vendor/ejsoft/ej-$mod")) {
+            if (is_dir($link = "$dir/vendor/ejsoft/module-$mod")) {
                 $this->stdout("Removing dir $link.\n");
                 FileHelper::removeDirectory($link);
                 $this->stdout("Creating symlink for $link.\n");
                 if (!file_exists("$base/modules/$mod")) {
-                    $ret = $this->actionModule($mod);
+                    $ret = $this->actionModule($mod, null, false);
                     if ($ret !== 0) {
                         return $ret;
                     }
@@ -310,7 +318,7 @@ class DevController extends Controller
                 continue;
             }
             $path = $dir . DIRECTORY_SEPARATOR . $file;
-            if (is_dir($path) && preg_match('/^ej-(.*)$/', $file, $matches)) {
+            if (is_dir($path) && preg_match('/^module-(.*)$/', $file, $matches)) {
                 $list[] = $matches[1];
             }
         }
