@@ -28,7 +28,8 @@ class DevController extends Controller
      * @var array
      */
     public $modules = [
-        'site' => 'git@github.com:ejsoft/module-site.git'
+        'admin' => 'git@github.com:ejsoft/module-admin.git',
+        'site'  => 'git@github.com:ejsoft/module-site.git'
     ];
     /**
      * @var array
