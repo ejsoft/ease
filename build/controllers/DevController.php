@@ -1,6 +1,6 @@
 <?php
 
-namespace ej\build\controllers;
+namespace build\controllers;
 
 use Yii;
 use yii\base\InvalidParamException;
@@ -23,13 +23,13 @@ class DevController extends Controller
     /**
      * @var string
      */
-    public $app = 'git@github.com:ejsoft/ej-cms.git';
+    public $app = 'git@github.com:ejsoft/project.git';
     /**
      * @var array
      */
     public $modules = [
-        'admin' => 'git@github.com:ejsoft/module-admin.git',
-        'site'  => 'git@github.com:ejsoft/module-site.git'
+        'admin' => 'git@github.com:ejsoft/admin.git',
+        'site'  => 'git@github.com:ejsoft/site.git'
     ];
     /**
      * @var array
@@ -75,8 +75,8 @@ class DevController extends Controller
 
         // root of the dev repo
         $base = dirname(dirname(__DIR__));
-        $dirs = $this->listSubDirs("$base/modules");
-        $dirs = array_merge($dirs, $this->listSubDirs("$base/site"));
+        $dirs = $this->listSubDirs("$base/dev/modules");
+        $dirs = array_merge($dirs, $this->listSubDirs("$base/dev/site"));
         asort($dirs);
 
         $oldcwd = getcwd();
@@ -99,7 +99,7 @@ class DevController extends Controller
     {
         // root of the dev repo
         $base = dirname(dirname(__DIR__));
-        $appDir = "$base/site";
+        $appDir = "$base/project/site";
 
         if (!file_exists($appDir)) {
             if (empty($repo)) {
@@ -144,7 +144,7 @@ class DevController extends Controller
     {
         // root of the dev repo
         $base = dirname(dirname(__DIR__));
-        $moduleDir = "$base/modules/$module";
+        $moduleDir = "$base/dev/modules/$module";
         echo $moduleDir . PHP_EOL;
         if (!file_exists($moduleDir)) {
             if (empty($repo)) {

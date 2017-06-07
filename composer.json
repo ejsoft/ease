@@ -1,52 +1,20 @@
 {
-  "name": "ejsoft/ej",
+  "name": "ejsoft/ease",
   "type": "project",
-  "version": "1.0.0-dev",
   "keywords": [
     "cms",
     "yii2"
   ],
   "minimum-stability": "dev",
   "prefer-stable": true,
-  "replace": {
-    "ejsoft/ej-core": "self.version"
-  },
   "require": {
-    "php": "~7.0.0",
-    "ext-mbstring": "*",
-    "ext-openssl": "*",
-    "ext-zip": "*",
-    "ext-mcrypt": "*",
-    "yiisoft/yii2": "~2.0.0",
-    "yiisoft/yii2-swiftmailer": "*",
-    "yiisoft/yii2-debug": "~2.0.0",
-    "yiisoft/yii2-twig": "~2.0.0",
-    "symfony/yaml": "*",
-    "borales/yii2-phone-input": "*",
-    "mobiledetect/mobiledetectlib": "*",
-    "giggsey/libphonenumber-for-php": "~8",
-    "kdn/yii2-domain-validator": "*",
-    "symfony/process": "*",
-    "samdark/sitemap": "*",
-    "danielstjules/stringy": "*",
-    "longman/ip-tools": "*"
-  },
-  "require-dev": {
-    "codeception/base": "^2.2.3",
-    "codeception/verify": "~0.3.1",
-    "codeception/specify": "~0.4.3"
-  },
-  "autoload": {
-    "psr-4": {"ej\\": "src/"}
+    "wikimedia/composer-merge-plugin": "dev-master"
   },
   "extra": {
-    "asset-installer-paths": {
-      "npm-asset-library": "vendor/npm",
-      "bower-asset-library": "vendor/bower"
-    },
-    "asset-vcs-driver-options": {
-      "github-no-api": true
-    },
-    "asset-pattern-skip-version": "(-build|-patch)"
+    "merge-plugin": {
+      "require": [
+        "src/composer.json"
+      ]
+    }
   }
 }

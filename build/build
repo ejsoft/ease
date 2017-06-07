@@ -6,7 +6,7 @@
 
 define('YII_DEBUG', true);
 
-$autoload = dirname(__DIR__) . '//vendor/autoload.php';
+$autoload = dirname(__DIR__) . '/vendor/autoload.php';
 
 if (file_exists($autoload)) {
     require($autoload);
@@ -19,12 +19,12 @@ if (!isset($vendorPath)) {
 }
 require($vendorPath . '/yiisoft/yii2/Yii.php');
 
-Yii::setAlias('@ej/build', __DIR__);
+Yii::setAlias('@build', __DIR__);
 
 $application = new yii\console\Application([
-    'id'                  => 'ej-build',
+    'id'                  => 'ease-build',
     'basePath'            => __DIR__,
-    'controllerNamespace' => 'ej\build\controllers',
+    'controllerNamespace' => 'build\controllers',
     'enableCoreCommands'  => false,
 ]);
 $application->run();

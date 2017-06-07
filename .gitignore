@@ -19,7 +19,6 @@ phpunit.xml
 node_modules
 
 # ignore dev installed apps and modules
-/site
-/modules
+/project
 
 tests/_output/*
