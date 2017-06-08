@@ -27,10 +27,7 @@ class DevController extends Controller
     /**
      * @var array
      */
-    public $modules = [
-        'admin' => 'git@github.com:ejsoft/ease-admin.git',
-        'site'  => 'git@github.com:ejsoft/ease-site.git'
-    ];
+    public $modules = [];
     /**
      * @var array
      */
