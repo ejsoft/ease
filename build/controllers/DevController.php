@@ -28,8 +28,8 @@ class DevController extends Controller
      * @var array
      */
     public $modules = [
-        'admin' => 'git@github.com:ejsoft/admin.git',
-        'site'  => 'git@github.com:ejsoft/site.git'
+        'admin' => 'git@github.com:ejsoft/ease-admin.git',
+        'site'  => 'git@github.com:ejsoft/ease-site.git'
     ];
     /**
      * @var array
@@ -75,8 +75,8 @@ class DevController extends Controller
 
         // root of the dev repo
         $base = dirname(dirname(__DIR__));
-        $dirs = $this->listSubDirs("$base/dev/modules");
-        $dirs = array_merge($dirs, $this->listSubDirs("$base/dev/site"));
+        $dirs = $this->listSubDirs("$base/project/modules");
+        $dirs = array_merge($dirs, $this->listSubDirs("$base/project/site"));
         asort($dirs);
 
         $oldcwd = getcwd();
@@ -144,7 +144,7 @@ class DevController extends Controller
     {
         // root of the dev repo
         $base = dirname(dirname(__DIR__));
-        $moduleDir = "$base/dev/modules/$module";
+        $moduleDir = "$base/project/modules/$module";
         echo $moduleDir . PHP_EOL;
         if (!file_exists($moduleDir)) {
             if (empty($repo)) {
@@ -209,14 +209,14 @@ class DevController extends Controller
      */
     protected function cleanupVendorDir($dir)
     {
-        if (is_link($link = "$dir/vendor/ejsoft/ej-core")) {
+        if (is_link($link = "$dir/vendor/ejsoft/core")) {
             $this->stdout("Removing symlink $link.\n");
             $this->unlink($link);
         }
         $modules = $this->findDirs("$dir/vendor/ejsoft");
         foreach ($modules as $module) {
-            echo "$dir/vendor/ejsoft/module-$module" . PHP_EOL;
-            if (is_link($link = "$dir/vendor/ejsoft/module-$module")) {
+            echo "$dir/vendor/ejsoft/ease-$module" . PHP_EOL;
+            if (is_link($link = "$dir/vendor/ejsoft/ease-$module")) {
                 $this->stdout("Removing symlink $link.\n");
                 $this->unlink($link);
             }
@@ -233,7 +233,7 @@ class DevController extends Controller
      */
     protected function linkCmsAndModules($dir, $base)
     {
-        if (is_dir($link = "$dir/vendor/ejsoft/ej-core")) {
+        if (is_dir($link = "$dir/vendor/ejsoft/core")) {
             $this->stdout("Removing dir $link.\n");
             FileHelper::removeDirectory($link);
             $this->stdout("Creating symlink for $link.\n");
@@ -241,17 +241,17 @@ class DevController extends Controller
         }
         $modules = $this->findDirs("$dir/vendor/ejsoft");
         foreach ($modules as $mod) {
-            if (is_dir($link = "$dir/vendor/ejsoft/module-$mod")) {
+            if (is_dir($link = "$dir/vendor/ejsoft/ease-$mod")) {
                 $this->stdout("Removing dir $link.\n");
                 FileHelper::removeDirectory($link);
                 $this->stdout("Creating symlink for $link.\n");
-                if (!file_exists("$base/modules/$mod")) {
+                if (!file_exists("$base/project/modules/$mod")) {
                     $ret = $this->actionModule($mod, null, false);
                     if ($ret !== 0) {
                         return $ret;
                     }
                 }
-                symlink("$base/modules/$mod", $link);
+                symlink("$base/project/modules/$mod", $link);
             }
         }
     }
@@ -319,7 +319,7 @@ class DevController extends Controller
                 continue;
             }
             $path = $dir . DIRECTORY_SEPARATOR . $file;
-            if (is_dir($path) && preg_match('/^module-(.*)$/', $file, $matches)) {
+            if (is_dir($path) && preg_match('/^ease-(.*)$/', $file, $matches)) {
                 $list[] = $matches[1];
             }
         }
